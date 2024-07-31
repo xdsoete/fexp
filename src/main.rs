@@ -1,7 +1,6 @@
 use eframe::egui::{self, CentralPanel};
 use eframe::{self};
 use navigation::Navigator;
-use std::path::Path;
 use file_ops::list_directory_contents;
 
 pub mod file_ops;
@@ -34,7 +33,7 @@ impl Default for FExpApp {
 impl eframe::App for FExpApp {
     // The `update` method is called every frame to update the UI
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
-    let files = list_directory_contents(Path::new(&self.navigator.current_path()));
+        let files = list_directory_contents(&self.navigator.current_path());
         CentralPanel::default().show(ctx, |ui| {
             ui.heading("Files");
             for file in files {
