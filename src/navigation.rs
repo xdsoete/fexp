@@ -7,10 +7,20 @@ pub struct Navigator {
 }
 
 impl Navigator {
+    #[cfg(target_family = "unix")]
     pub fn new() -> Self {
         Self {
             current_path: PathBuf::from("/"),
             history: vec![PathBuf::from("/")],
+            history_index: 0,
+        }
+    }
+
+    #[cfg(target_family = "windows")]
+    pub fn new() -> Self {
+        Self {
+            current_path: PathBuf::from("C:\\"),
+            history: vec![PathBuf::from("C:\\")],
             history_index: 0,
         }
     }
