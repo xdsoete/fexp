@@ -1,9 +1,8 @@
 use std::fs;
 use std::path::PathBuf;
-
 use eframe::egui::{self, CentralPanel};
 use eframe::{self};
-use egui::ScrollArea;
+use egui::{Area, ScrollArea, TopBottomPanel};
 use navigation::Navigator;
 use file_ops::{list_directory_contents, open_file};
 
@@ -17,7 +16,7 @@ fn main() -> Result<(), eframe::Error> {
     eframe::run_native(
         "Hello World App",
         native_options,
-        Box::new(|_cc| Box::new(FExpApp::default())),
+        Box::new(|_cc| Ok(Box::new(FExpApp::default()))),
     )
 }
 
@@ -39,20 +38,42 @@ impl eframe::App for FExpApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         let files = list_directory_contents(&self.navigator.current_path());
 
+        TopBottomPanel::top("topbar").show(ctx, |ui| {
+            ui.horizontal(|ui| {
+                if ui.button("back").clicked() {
+                    self.navigator.go_back_one();
+                }
+                if ui.button("forward").clicked() {
+                    self.navigator.go_forward_one();
+                }
+            })
+        });
+
         CentralPanel::default().show(ctx, |ui| {
             ui.heading("Files");
             ScrollArea::vertical().show(ui, |ui| {
-                for file in files {
-                    if ui.button(file.clone()).clicked() {
-                        let full_path: PathBuf = self.navigator.current_path().join(file);
-                        if let Ok(metadata) = fs::metadata(full_path.clone()) {
-                            if metadata.is_file() {
-                                open_file(&full_path);
-                            } else if metadata.is_dir() {
-                                self.navigator.navigate_to(&full_path);
+                for (index, file) in files.iter().enumerate() {
+                    ui.push_id(index, |ui| {
+                        let response = ui.horizontal(|ui| {
+                            ui.add(
+                                egui::Image::new(egui::include_image!("./default-file.svg"))
+                                    .max_width(16.0)
+                                    .rounding(1.0),
+                            );
+                            ui.label(file.clone());
+                        }).response.interact(egui::Sense::click());
+
+                        if response.clicked() {
+                            let full_path: PathBuf = self.navigator.current_path().join(file);
+                            if let Ok(metadata) = fs::metadata(full_path.clone()) {
+                                if metadata.is_file() {
+                                    open_file(&full_path);
+                                } else if metadata.is_dir() {
+                                    self.navigator.navigate_to(&full_path);
+                                }
                             }
                         }
-                    }
+                    });   
                 }
             });
         });
