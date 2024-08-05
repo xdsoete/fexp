@@ -76,6 +76,9 @@ impl eframe::App for FExpApp {
 
                         if response.clicked() {
                             self.focussed_file = self.navigator.current_path().join(file);
+                        }
+
+                        if response.double_clicked() {
                             let full_path: PathBuf = self.navigator.current_path().join(file);
                             if let Ok(metadata) = fs::metadata(full_path.clone()) {
                                 if metadata.is_file() {
