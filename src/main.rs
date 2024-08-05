@@ -2,7 +2,7 @@ use std::fs;
 use std::path::PathBuf;
 use eframe::egui::{self, CentralPanel};
 use eframe::{self};
-use egui::{Area, ScrollArea, TopBottomPanel};
+use egui::{ScrollArea, SidePanel, TopBottomPanel};
 use navigation::Navigator;
 use file_ops::{list_directory_contents, open_file};
 
@@ -14,7 +14,7 @@ fn main() -> Result<(), eframe::Error> {
     let native_options = eframe::NativeOptions::default();
     // Run the application
     eframe::run_native(
-        "Hello World App",
+        "File explorer",
         native_options,
         Box::new(|_cc| Ok(Box::new(FExpApp::default()))),
     )
@@ -22,19 +22,20 @@ fn main() -> Result<(), eframe::Error> {
 
 // Define the structure for the application
 struct FExpApp {
-    navigator: Navigator
+    navigator: Navigator,
+    focussed_file: PathBuf
 }
 
 impl Default for FExpApp {
     fn default() -> Self {
         Self {
-            navigator: Navigator::new()
+            navigator: Navigator::new(),
+            focussed_file: PathBuf::default()
         }
     }
 }
 
 impl eframe::App for FExpApp {
-    // The `update` method is called every frame to update the UI
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         let files = list_directory_contents(&self.navigator.current_path());
 
@@ -47,6 +48,16 @@ impl eframe::App for FExpApp {
                     self.navigator.go_forward_one();
                 }
             })
+        });
+
+        SidePanel::right("focussed_file_panel").show(ctx, |ui| {
+            ui.heading("Details");
+            if let Some(filename) = self.focussed_file.file_name() {
+                ui.label(format!("name: {}", filename.to_string_lossy()));
+            }
+            if let Ok(metadata) = fs::metadata(self.focussed_file.clone()) {
+                ui.label(format!("size: {} bytes", metadata.len()));
+            }
         });
 
         CentralPanel::default().show(ctx, |ui| {
@@ -64,6 +75,7 @@ impl eframe::App for FExpApp {
                         }).response.interact(egui::Sense::click());
 
                         if response.clicked() {
+                            self.focussed_file = self.navigator.current_path().join(file);
                             let full_path: PathBuf = self.navigator.current_path().join(file);
                             if let Ok(metadata) = fs::metadata(full_path.clone()) {
                                 if metadata.is_file() {
