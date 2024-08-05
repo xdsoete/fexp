@@ -50,7 +50,7 @@ impl eframe::App for FExpApp {
             })
         });
 
-        SidePanel::right("focussed_file_panel").show(ctx, |ui| {
+        SidePanel::right("focussed_file_panel").exact_width(256.0).show(ctx, |ui| {
             ui.heading("Details");
             if let Some(filename) = self.focussed_file.file_name() {
                 ui.label(format!("name: {}", filename.to_string_lossy()));
