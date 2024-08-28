@@ -37,9 +37,11 @@ impl Default for FExpApp {
 
 impl eframe::App for FExpApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        egui_extras::install_image_loaders(ctx);
+
         let files = list_directory_contents(&self.navigator.current_path());
 
-        TopBottomPanel::top("topbar").show(ctx, |ui| {
+        TopBottomPanel::top("topbar").exact_height(64.0).show(ctx, |ui| {
             ui.horizontal(|ui| {
                 if ui.button("back").clicked() {
                     self.navigator.go_back_one();
@@ -67,7 +69,7 @@ impl eframe::App for FExpApp {
                     ui.push_id(index, |ui| {
                         let response = ui.horizontal(|ui| {
                             ui.add(
-                                egui::Image::new(egui::include_image!("./default-file.svg"))
+                                egui::Image::new(egui::include_image!("./default-file.png"))
                                     .max_width(16.0)
                                     .rounding(1.0),
                             );

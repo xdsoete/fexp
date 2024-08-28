@@ -36,8 +36,10 @@ impl Navigator {
     }
 
     pub fn go_back_one(&mut self) {
-        self.history_index -= 1;
-        self.current_path = self.history[self.history_index].clone();
+        if self.history_index > 0 {
+            self.history_index -= 1;
+            self.current_path = self.history[self.history_index].clone();
+        }
     }
 
     pub fn go_forward_one(&mut self) {
