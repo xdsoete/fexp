@@ -26,6 +26,9 @@ impl Navigator {
     }
 
     pub fn navigate_to(&mut self, path: &Path) {
+        while self.history.len() - 1 > self.history_index {
+            self.history.pop();
+        }
         self.current_path = path.to_path_buf();
         self.history.push(self.current_path.clone());
         self.history_index = self.history.len() - 1;

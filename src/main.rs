@@ -3,11 +3,13 @@ use std::path::PathBuf;
 use eframe::egui::{self, CentralPanel};
 use eframe::{self};
 use egui::{ScrollArea, SidePanel, TopBottomPanel};
+use icon::get_icon;
 use navigation::Navigator;
-use file_ops::{list_directory_contents, open_file};
+use file_ops::{get_file_type, list_directory_contents, open_file};
 
 pub mod file_ops;
 pub mod navigation;
+pub mod icon;
 
 fn main() -> Result<(), eframe::Error> {
     // Define native options for the application
@@ -63,17 +65,22 @@ impl eframe::App for FExpApp {
         });
 
         CentralPanel::default().show(ctx, |ui| {
-            ui.heading("Files");
+            ui.heading(self.navigator.current_path().to_string_lossy());
+
             ScrollArea::vertical().show(ui, |ui| {
                 for (index, file) in files.iter().enumerate() {
                     ui.push_id(index, |ui| {
+                        let full_path: PathBuf = self.navigator.current_path().join(file);
+                        let file_type = get_file_type(&full_path);
+                        let icon = get_icon(file_type);
                         let response = ui.horizontal(|ui| {
-                            ui.add(
-                                egui::Image::new(egui::include_image!("./default-file.png"))
+                           ui.add(
+                                egui::Image::new(icon)
                                     .max_width(16.0)
                                     .rounding(1.0),
-                            );
-                            ui.label(file.clone());
+                           );
+
+                           ui.label(file.clone());
                         }).response.interact(egui::Sense::click());
 
                         if response.clicked() {
@@ -81,7 +88,6 @@ impl eframe::App for FExpApp {
                         }
 
                         if response.double_clicked() {
-                            let full_path: PathBuf = self.navigator.current_path().join(file);
                             if let Ok(metadata) = fs::metadata(full_path.clone()) {
                                 if metadata.is_file() {
                                     open_file(&full_path);

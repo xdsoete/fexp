@@ -2,6 +2,14 @@ use std::fs;
 use std::path::Path;
 use std::process::Command;
 
+pub enum FileType {
+    Rust,
+    Python,
+    Text,
+    Folder,
+    Unknown,
+}
+
 pub fn list_directory_contents(path: &Path) -> Vec<String> {
     let mut entries = Vec::new();
     if let Ok(dir_entries) = fs::read_dir(path) {
@@ -32,4 +40,19 @@ pub fn open_file(path: &Path) {
         .args("/C", "start", path)
         .spawn()
         .expect("Failed to open file");
+}
+
+pub fn get_file_type(path: &Path) -> FileType {
+    if path.is_dir(){
+        FileType::Folder
+    } else if let Some(ext) = path.extension() {
+        match ext.to_str() {
+            Some("rs") => FileType::Rust,
+            Some("py") => FileType::Python,
+            Some("txt") => FileType::Text,
+            _ => FileType::Unknown,
+        }
+    } else {
+        FileType::Unknown
+    }
 }
