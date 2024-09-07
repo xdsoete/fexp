@@ -73,6 +73,7 @@ impl eframe::App for FExpApp {
                         let full_path: PathBuf = self.navigator.current_path().join(file);
                         let file_type = get_file_type(&full_path);
                         let icon = get_icon(file_type);
+
                         let response = ui.horizontal(|ui| {
                            ui.add(
                                 egui::Image::new(icon)

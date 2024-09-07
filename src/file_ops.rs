@@ -6,6 +6,7 @@ pub enum FileType {
     Rust,
     Python,
     Text,
+    Image,
     Folder,
     Unknown,
 }
@@ -50,6 +51,7 @@ pub fn get_file_type(path: &Path) -> FileType {
             Some("rs") => FileType::Rust,
             Some("py") => FileType::Python,
             Some("txt") => FileType::Text,
+            Some("png") | Some("jpg") | Some("gif") => FileType::Image,
             _ => FileType::Unknown,
         }
     } else {
