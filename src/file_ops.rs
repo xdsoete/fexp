@@ -1,5 +1,5 @@
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 pub enum FileType {
@@ -11,12 +11,12 @@ pub enum FileType {
     Unknown,
 }
 
-pub fn list_directory_contents(path: &Path) -> Vec<String> {
+pub fn list_directory_contents(path: &Path) -> Vec<PathBuf> {
     let mut entries = Vec::new();
     if let Ok(dir_entries) = fs::read_dir(path) {
         for entry in dir_entries {
             if let Ok(entry) = entry {
-                entries.push(entry.file_name().into_string().unwrap());
+                entries.push(path.join(entry.file_name().into_string().unwrap()));
             }
         }
     }
@@ -51,7 +51,6 @@ pub fn get_file_type(path: &Path) -> FileType {
             Some("rs") => FileType::Rust,
             Some("py") => FileType::Python,
             Some("txt") => FileType::Text,
-            Some("png") | Some("jpg") | Some("gif") => FileType::Image,
             _ => FileType::Unknown,
         }
     } else {

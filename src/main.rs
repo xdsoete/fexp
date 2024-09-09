@@ -6,10 +6,12 @@ use egui::{ScrollArea, SidePanel, TopBottomPanel};
 use icon::get_icon;
 use navigation::Navigator;
 use file_ops::{get_file_type, list_directory_contents, open_file};
+use sort::{Sorter, Alphabetical, AlphabeticalDirectoriesFirst};
 
 pub mod file_ops;
 pub mod navigation;
 pub mod icon;
+pub mod sort;
 
 fn main() -> Result<(), eframe::Error> {
     // Define native options for the application
@@ -25,14 +27,16 @@ fn main() -> Result<(), eframe::Error> {
 // Define the structure for the application
 struct FExpApp {
     navigator: Navigator,
-    focussed_file: PathBuf
+    focussed_file: PathBuf,
+    sort_strategy: Box<dyn Sorter>,
 }
 
 impl Default for FExpApp {
     fn default() -> Self {
         Self {
             navigator: Navigator::new(),
-            focussed_file: PathBuf::default()
+            focussed_file: PathBuf::default(),
+            sort_strategy: Box::new(AlphabeticalDirectoriesFirst)
         }
     }
 }
@@ -41,7 +45,8 @@ impl eframe::App for FExpApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         egui_extras::install_image_loaders(ctx);
 
-        let files = list_directory_contents(&self.navigator.current_path());
+        let mut files = list_directory_contents(&self.navigator.current_path());
+        files = (*self.sort_strategy).sort(files);
 
         TopBottomPanel::top("topbar").exact_height(64.0).show(ctx, |ui| {
             ui.horizontal(|ui| {
@@ -68,9 +73,10 @@ impl eframe::App for FExpApp {
             ui.heading(self.navigator.current_path().to_string_lossy());
 
             ScrollArea::vertical().show(ui, |ui| {
-                for (index, file) in files.iter().enumerate() {
+                for (index, full_path) in files.iter().enumerate() {
                     ui.push_id(index, |ui| {
-                        let full_path: PathBuf = self.navigator.current_path().join(file);
+                        //let full_path: PathBuf = self.navigator.current_path().join(file);
+                        let file = full_path.file_name().unwrap().to_string_lossy();
                         let file_type = get_file_type(&full_path);
                         let icon = get_icon(file_type);
 
@@ -85,7 +91,7 @@ impl eframe::App for FExpApp {
                         }).response.interact(egui::Sense::click());
 
                         if response.clicked() {
-                            self.focussed_file = self.navigator.current_path().join(file);
+                            self.focussed_file = full_path.to_path_buf();//.navigator.current_path().join(file);
                         }
 
                         if response.double_clicked() {
@@ -101,5 +107,11 @@ impl eframe::App for FExpApp {
                 }
             });
         });
+    }
+}
+
+impl FExpApp {
+    fn set_sort_strategy(&mut self, new_strategy: Box<dyn Sorter>) {
+        self.sort_strategy = new_strategy;
     }
 }
