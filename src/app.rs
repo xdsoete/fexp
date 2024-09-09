@@ -3,6 +3,7 @@ use std::path::PathBuf;
 use eframe::egui::{self, CentralPanel};
 use eframe::{self};
 use egui::{ComboBox, ScrollArea, SidePanel, TopBottomPanel};
+use crate::conversion::format_bytes;
 use crate::icon::get_icon;
 use crate::navigation::Navigator;
 use crate::file_ops::{get_file_type, list_directory_contents, open_file};
@@ -58,7 +59,7 @@ impl eframe::App for FExpApp {
                 ui.label(format!("name: {}", filename.to_string_lossy()));
             }
             if let Ok(metadata) = fs::metadata(self.focussed_file.clone()) {
-                ui.label(format!("size: {} bytes", metadata.len()));
+                ui.label(format!("size: {}", format_bytes(metadata.len())));
             }
         });
 
