@@ -31,3 +31,9 @@ impl Sorter for AlphabeticalDirectoriesFirst {
         files
     }
 }
+
+impl PartialEq for dyn Sorter {
+    fn eq(&self, _other: &Self) -> bool {
+        false
+    }
+}

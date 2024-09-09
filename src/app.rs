@@ -2,7 +2,7 @@ use std::fs;
 use std::path::PathBuf;
 use eframe::egui::{self, CentralPanel};
 use eframe::{self};
-use egui::{ScrollArea, SidePanel, TopBottomPanel};
+use egui::{ComboBox, ScrollArea, SidePanel, TopBottomPanel};
 use crate::icon::get_icon;
 use crate::navigation::Navigator;
 use crate::file_ops::{get_file_type, list_directory_contents, open_file};
@@ -39,6 +39,13 @@ impl eframe::App for FExpApp {
                 if ui.button("forward").clicked() {
                     self.navigator.go_forward_one();
                 }
+                ComboBox::from_id_source(0)
+                    .selected_text("sort")
+                    .show_ui(ui, |ui| {
+                        ui.selectable_value(&mut self.sort_strategy, Box::new(Alphabetical), "alphabetical");
+                        ui.selectable_value(&mut self.sort_strategy, Box::new(AlphabeticalDirectoriesFirst), "directories first");
+                    }
+                );
             })
         });
 
@@ -90,11 +97,5 @@ impl eframe::App for FExpApp {
                 }
             });
         });
-    }
-}
-
-impl FExpApp {
-    fn set_sort_strategy(&mut self, new_strategy: Box<dyn Sorter>) {
-        self.sort_strategy = new_strategy;
     }
 }
