@@ -7,6 +7,8 @@ pub mod icon;
 pub mod sort;
 pub mod app;
 pub mod conversion;
+pub mod config;
+pub mod settings;
 
 fn main() -> Result<(), eframe::Error> {
     // Define native options for the application

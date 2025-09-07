@@ -43,6 +43,28 @@ pub fn open_file(path: &Path) {
         .expect("Failed to open file");
 }
 
+pub fn open_file_with(path: &Path, app: &Path) {
+    #[cfg(target_os = "linux")]
+    Command::new(app)
+        .arg(path)
+        .spawn()
+        .expect("Failed to open file with specified app");
+
+    #[cfg(target_os = "macos")]
+    Command::new("open")
+        .arg("-a")
+        .arg(app)
+        .arg(path)
+        .spawn()
+        .expect("Failed to open file with specified app");
+
+    #[cfg(target_os = "windows")]
+    Command::new(app)
+        .arg(path)
+        .spawn()
+        .expect("Failed to open file with specified app");
+}
+
 pub fn get_file_type(path: &Path) -> FileType {
     if path.is_dir(){
         FileType::Folder

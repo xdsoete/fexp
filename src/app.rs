@@ -6,14 +6,14 @@ use egui::{ComboBox, ScrollArea, SidePanel, TopBottomPanel};
 use crate::conversion::format_bytes;
 use crate::icon::get_icon;
 use crate::navigation::Navigator;
-use crate::file_ops::{get_file_type, list_directory_contents, open_file};
-use crate::sort::{Sorter, Alphabetical, AlphabeticalDirectoriesFirst};
+use crate::file_ops::{get_file_type, list_directory_contents, open_file, open_file_with};
+use crate::settings::Settings;
+use crate::sort::{Alphabetical, AlphabeticalDirectoriesFirst};
 
 pub struct FExpApp {
     navigator: Navigator,
     focussed_file: PathBuf,
-    sort_strategy: Box<dyn Sorter>,
-    hide_hidden_files: bool,
+    settings: Settings
 }
 
 impl Default for FExpApp {
@@ -21,8 +21,7 @@ impl Default for FExpApp {
         Self {
             navigator: Navigator::new(),
             focussed_file: PathBuf::default(),
-            sort_strategy: Box::new(AlphabeticalDirectoriesFirst),
-            hide_hidden_files: false,
+            settings: Settings::load(),
         }
     }
 }
@@ -32,7 +31,7 @@ impl eframe::App for FExpApp {
         egui_extras::install_image_loaders(ctx);
 
         let mut files = list_directory_contents(&self.navigator.current_path());
-        files = (*self.sort_strategy).sort(files);
+        files = (*self.settings.sorting_stratgy).sort(files);
 
         TopBottomPanel::top("topbar").exact_height(64.0).show(ctx, |ui| {
             ui.horizontal(|ui| {
@@ -42,14 +41,14 @@ impl eframe::App for FExpApp {
                 if ui.button("forward").clicked() {
                     self.navigator.go_forward_one();
                 }
-                ComboBox::from_id_source(0)
+                ComboBox::from_id_salt(0)
                     .selected_text("sort")
                     .show_ui(ui, |ui| {
-                        ui.selectable_value(&mut self.sort_strategy, Box::new(Alphabetical), "alphabetical");
-                        ui.selectable_value(&mut self.sort_strategy, Box::new(AlphabeticalDirectoriesFirst), "directories first");
+                        ui.selectable_value(&mut self.settings.sorting_stratgy, Box::new(Alphabetical), "alphabetical");
+                        ui.selectable_value(&mut self.settings.sorting_stratgy, Box::new(AlphabeticalDirectoriesFirst), "directories first");
                     }
                 );
-                ui.checkbox(&mut self.hide_hidden_files, "hide hidden files");
+                ui.checkbox(&mut self.settings.hide_hidden_files, "hide hidden files");
             })
         });
 
@@ -69,7 +68,7 @@ impl eframe::App for FExpApp {
             ScrollArea::vertical().show(ui, |ui| {
                 for (index, full_path) in files.iter().enumerate() {
                     let file = full_path.file_name().unwrap().to_string_lossy();
-                    if !self.hide_hidden_files || !file.starts_with('.') {
+                    if !self.settings.hide_hidden_files || !file.starts_with('.') {
                         ui.push_id(index, |ui| {
                             let file_type = get_file_type(&full_path);
                             let icon = get_icon(file_type);
@@ -78,7 +77,7 @@ impl eframe::App for FExpApp {
                                 ui.add(
                                     egui::Image::new(icon)
                                         .max_width(16.0)
-                                        .rounding(1.0),
+                                        .corner_radius(1.0),
                                 );
 
                                 ui.label(file.clone());
