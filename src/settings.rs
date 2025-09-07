@@ -11,7 +11,7 @@ impl Settings {
 
         print!("{:?}", config);
 
-        let sorting_strategy: Box<dyn Sorter> = match config.sorting_stratgy.as_str() {
+        let sorting_strategy: Box<dyn Sorter> = match config.sorting_strategy.as_str() {
             "alpha_dir_first" => Box::new(AlphabeticalDirectoriesFirst),
             "alpha" => Box::new(Alphabetical),
             _ => Box::new(AlphabeticalDirectoriesFirst),

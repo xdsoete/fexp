@@ -4,14 +4,14 @@ use serde::{Serialize, Deserialize};
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Config {
     pub hide_hidden_files: bool,
-    pub sorting_stratgy: String,
+    pub sorting_strategy: String,
 }
 
 impl Default for Config {
     fn default() -> Self {
         Self { 
             hide_hidden_files: true,
-            sorting_stratgy: "alpha".to_string()
+            sorting_strategy: "alpha_dir_first".to_string()
         }
     }
 }
